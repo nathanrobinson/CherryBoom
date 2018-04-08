@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using CherryBoom;
+using UnityEngine;
 
 [RequireComponent(typeof(Controller2D))]
 public class Player : MonoBehaviour
@@ -8,7 +10,7 @@ public class Player : MonoBehaviour
     public float timeToJumpApex = .4f;
     private float accelerationTimeAirborne = .2f;
     private float accelerationTimeGrounded = .1f;
-    private float moveSpeed = 6f;
+    public float walkSpeed = 3f;
 
     public Vector2 wallJumpClimb;
     public Vector2 wallJumpOff;
@@ -16,8 +18,11 @@ public class Player : MonoBehaviour
 
     public bool canDoubleJump;
     private bool isDoubleJumping = false;
+    private bool isDoubleJumpingValid = true;
+    private bool isJumping = false;
 
     public float wallSlideSpeedMax = 3f;
+
     public float wallStickTime = .25f;
     private float timeToWallUnstick;
 
@@ -37,6 +42,8 @@ public class Player : MonoBehaviour
 
     private Transform sprite;
     private Animator spriteAnimator;
+
+    public Collider2D playerCollider { get { return controller != null ? controller.coll : null; }}
 
     private void Start()
     {
@@ -82,12 +89,16 @@ public class Player : MonoBehaviour
 
         if (controller.collisions.below)
         {
-            spriteAnimator.SetBool("jumping", false);
+            isJumping = false;
+            isDoubleJumpingValid = true;
         }
+        spriteAnimator.SetBool("jumping", isJumping);
     }
 
     public void SetDirectionalInput(Vector2 input)
     {
+        if (isJumping) return;
+
         directionalInput = input;
         if (directionalInput.x > 0)
         {
@@ -101,32 +112,35 @@ public class Player : MonoBehaviour
 
     public void OnJumpInputDown()
     {
-        spriteAnimator.SetBool("jumping", true);
+        isJumping = true;
         if (wallSliding)
         {
-            if (wallDirX == directionalInput.x)
-            {
-                velocity.x = -wallDirX * wallJumpClimb.x;
-                velocity.y = wallJumpClimb.y;
-            }
-            else if (directionalInput.x == 0)
-            {
-                velocity.x = -wallDirX * wallJumpOff.x;
-                velocity.y = wallJumpOff.y;
-            }
-            else
-            {
+            directionalInput.x = -wallDirX;
+            // if (wallDirX == directionalInput.x)
+            // {
+            //     velocity.x = -wallDirX * wallJumpClimb.x;
+            //     velocity.y = wallJumpClimb.y;
+            // }
+            // else if (directionalInput.x == 0)
+            // {
+            //     velocity.x = -wallDirX * wallJumpOff.x;
+            //     velocity.y = wallJumpOff.y;
+            // }
+            // else
+            // {
                 velocity.x = -wallDirX * wallLeap.x;
                 velocity.y = wallLeap.y;
-            }
+            //}
             isDoubleJumping = false;
+            isDoubleJumpingValid = false;
         }
         if (controller.collisions.below)
         {
             velocity.y = maxJumpVelocity;
-            isDoubleJumping = false;
+            isDoubleJumping = false;  
+            isDoubleJumpingValid = true;          
         }
-        if (canDoubleJump && !controller.collisions.below && !isDoubleJumping && !wallSliding)
+        if (canDoubleJump && !controller.collisions.below && !isDoubleJumping && !wallSliding && isDoubleJumpingValid)
         {
             velocity.y = maxJumpVelocity;
             isDoubleJumping = true;
@@ -148,6 +162,8 @@ public class Player : MonoBehaviour
         if ((controller.collisions.left || controller.collisions.right) && !controller.collisions.below && velocity.y < 0)
         {
             wallSliding = true;
+            isJumping = false;
+            isDoubleJumpingValid = false;
 
             if (velocity.y < -wallSlideSpeedMax)
             {
@@ -176,7 +192,7 @@ public class Player : MonoBehaviour
 
     private void CalculateVelocity()
     {
-        var targetVelocityX = directionalInput.x * moveSpeed;
+        var targetVelocityX = directionalInput.x * walkSpeed;
         velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, (controller.collisions.below ? accelerationTimeGrounded : accelerationTimeAirborne));
         velocity.y += gravity * Time.deltaTime;
         spriteAnimator.SetFloat("velocityX", velocity.x);

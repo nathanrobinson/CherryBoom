@@ -292,7 +292,7 @@ public class FreeParallaxElement
                     var objWidth = c.WorldToViewportPoint(new Vector3(worldBottom.x + b.size.x, 0, 0)).x;
                     if (objWidth < 1.1f)
                     {
-                        Debug.LogWarning("Game object in element index " + index.ToString() + " did not fit the screen width but was asked to wrap, so it was stretched. This can be fixed " +
+                        Debug.LogWarning("Game object " + obj.name + " in element index " + index.ToString() + " did not fit the screen width (" + b.size.x + ") but was asked to wrap, so it was stretched. This can be fixed " +
                                          "by making sure any parallax graphics that wrap are at least 1.1x times the largest width resolution you support.");
                         var scale = obj.transform.localScale;
                         scale.x = (scale.x * (1.0f / objWidth)) + 0.1f;
@@ -363,11 +363,11 @@ public class FreeParallaxElement
                 // position in the next spot in line
                 if (p.IsHorizontal)
                 {
-                    offset -= (r.bounds.size.x - p.WrapOverlap);
+                    offset -= (SpeedRatio < 0 ? -0.5f : 0) * (r.bounds.size.x - p.WrapOverlap);
                 }
                 else
                 {
-                    offset -= (r.bounds.size.y - p.WrapOverlap);
+                    offset -= (SpeedRatio < 0 ? -0.5f : 0) * (r.bounds.size.y - p.WrapOverlap);
                 }
                 obj.transform.rotation = Quaternion.identity;
 
@@ -390,6 +390,7 @@ public class FreeParallaxElement
                     if (p.IsHorizontal)
                     {
                         FreeParallax.SetPosition(obj, r, offset, screenLeft.y);
+                        Debug.Log(string.Format("Initial set position for {0}: offset: {1}, bottom: {2}", obj.name, offset, screenLeft.y));
                     }
                     else
                     {

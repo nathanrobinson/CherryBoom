@@ -45,8 +45,6 @@ public class CameraFollow : MonoBehaviour
 
         var focusPosition = focusArea.centre + Vector2.up * verticalOffset;
 
-        var previousLookAheadX = currentLookAheadX;
-
         if (Mathf.Abs(focusArea.velocity.x) > 0.01)
         {
             lookAheadDirX = Mathf.Sign(focusArea.velocity.x);
