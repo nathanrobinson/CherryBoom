@@ -14,6 +14,7 @@ namespace CherryBoom {
 		private Player player;
 		private Text cherryCountText;
 		private Text scoreText;
+		private Text lifeText;
 
 
 
@@ -23,8 +24,10 @@ namespace CherryBoom {
 			var texts = GetComponentsInChildren<Text>();
 			cherryCountText = texts.FirstOrDefault(x => x.name == "CherryCount");
 			scoreText = texts.FirstOrDefault(x => x.name == "Score");
+			lifeText = texts.FirstOrDefault(x => x.name == "LifeCount");
 			cherryCountText.text ="0";
 			scoreText.text = "0";
+			lifeText.text = lives.ToString("n0");
 		}
 		
 		// Update is called once per frame
