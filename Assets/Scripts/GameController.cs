@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;      //Allows us to use SceneManager
 
 namespace CherryBoom {
 	public class GameController : MonoBehaviour {
 
+    	public float restartGameDelay = 1.5f;        //Delay time in seconds to restart game.
 		private int score = 0;
 		private int lives = 3;
 		private int cherries = 0;
@@ -48,5 +50,23 @@ namespace CherryBoom {
 			score += scorable.points;
 			scoreText.text = score.ToString("n0");
 		}
+
+		public void Die()
+		{
+			lives -= 1;
+			lifeText.text = lives.ToString("n0");
+
+			if (lives == 0){				
+                //Invoke the Restart function to start the next level with a delay of restartLevelDelay (default 1 second).
+                Invoke ("Restart", restartGameDelay);
+			}
+		}
+
+		//Restart reloads the scene when called.
+        private void Restart ()
+        {
+            //Load the last scene loaded, in this case Main, the only scene in the game.
+            SceneManager.LoadScene (0);
+        }
 	}
 }

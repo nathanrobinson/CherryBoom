@@ -13,30 +13,15 @@ namespace CherryBoom {
 			cherries = 1;
 		}
 
-		private bool hidden;
-
 		public GameController gameController;
-
-		private Collider2D cherryCollider;
-		private Renderer cherryRenderer;
-
-		// Use this for initialization
-		void Start () {
-			cherryCollider = GetComponent<Collider2D>();
-			cherryRenderer = GetComponent<Renderer>();
-		}
 		
-		// Update is called once per frame
-		void Update () {
-			if (!hidden &&	gameController!= null)
+		void OnTriggerEnter2D(Collider2D other) {
+			if (gameController!= null &&
+				other.gameObject.CompareTag("Player"))
 			{
-				var playerCollider = gameController.playerCollider;
-				if(playerCollider != null && playerCollider.bounds.Intersects(cherryCollider.bounds)) {
-					gameController.AddScore(this);
-					gameController.AddCherries(this);
-					hidden = true;
-					cherryRenderer.enabled = false;
-				}
+				gameController.AddScore(this);
+				gameController.AddCherries(this);
+				Destroy(gameObject);
 			}
 			
 		}

@@ -4,6 +4,7 @@
 public class PlayerInput : MonoBehaviour
 {
     private Player player;
+    public float runMultiplyer = 2.5f;
 
     private void Start()
     {
@@ -14,7 +15,7 @@ public class PlayerInput : MonoBehaviour
     {
         var running = Input.GetButton("Fire1");
 
-        var directionalInput = new Vector2((running ? 3 : 1) * Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        var directionalInput = new Vector2((running ? runMultiplyer : 1) * Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         player.SetDirectionalInput(directionalInput);
 
         if (Input.GetButtonDown("Jump"))

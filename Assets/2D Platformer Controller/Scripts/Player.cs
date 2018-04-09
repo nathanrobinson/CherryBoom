@@ -5,12 +5,14 @@ using UnityEngine;
 [RequireComponent(typeof(Controller2D))]
 public class Player : MonoBehaviour
 {
+    public float restartLevelDelay = 1.5f;        //Delay time in seconds to restart level.
+    public float health = 1;
     public float maxJumpHeight = 4f;
     public float minJumpHeight = 1f;
     public float timeToJumpApex = .4f;
     private float accelerationTimeAirborne = .2f;
     private float accelerationTimeGrounded = .1f;
-    public float walkSpeed = 3f;
+    public float walkSpeed = 4f;
 
     public Vector2 wallJumpClimb;
     public Vector2 wallJumpOff;
@@ -42,11 +44,15 @@ public class Player : MonoBehaviour
 
     private Transform sprite;
     private Animator spriteAnimator;
+    private bool acceptInput = true;
 
     public Collider2D playerCollider { get { return controller != null ? controller.coll : null; }}
 
+    private GameController gameController;
+
     private void Start()
     {
+        gameController = GetComponentInParent<GameController>();
         controller = GetComponent<Controller2D>();
         gravity = -(2 * maxJumpHeight) / Mathf.Pow(timeToJumpApex, 2);
         maxJumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
@@ -73,9 +79,13 @@ public class Player : MonoBehaviour
         }
         if (transform.position.y + deltav.y <= 0 && deltav.y < 0)
         {
+            acceptInput = false;
             velocity.x = 0;
             velocity.y = 0;
-            transform.position = new Vector3(8, 8);
+            transform.position = new Vector3(8, 9);
+            gameController.Die();
+            spriteAnimator.Play("die");
+            Invoke("ResetPlayer", restartLevelDelay);
         }
         else
         {
@@ -95,8 +105,26 @@ public class Player : MonoBehaviour
         spriteAnimator.SetBool("jumping", isJumping);
     }
 
+    public void ResetPlayer() {
+        acceptInput = true;
+        spriteAnimator.Play("idle");
+        transform.position = new Vector3(8, 9);
+    }
+
+    public void GetHit(float force = 1f) {
+        health -= force;
+        spriteAnimator.Play("get_hit");
+        if (health <= 0) {        
+            gameController.Die();
+            spriteAnimator.Play("die");
+            Invoke("ResetPlayer", restartLevelDelay);
+        }
+    }
+
     public void SetDirectionalInput(Vector2 input)
     {
+        if (!acceptInput) return;
+        
         if (isJumping) return;
 
         directionalInput = input;
@@ -112,6 +140,8 @@ public class Player : MonoBehaviour
 
     public void OnJumpInputDown()
     {
+        if (!acceptInput) return;
+        
         isJumping = true;
         if (wallSliding)
         {
@@ -149,6 +179,8 @@ public class Player : MonoBehaviour
 
     public void OnJumpInputUp()
     {
+        if (!acceptInput) return;
+
         if (velocity.y > minJumpVelocity)
         {
             velocity.y = minJumpVelocity;
@@ -196,5 +228,10 @@ public class Player : MonoBehaviour
         velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, (controller.collisions.below ? accelerationTimeGrounded : accelerationTimeAirborne));
         velocity.y += gravity * Time.deltaTime;
         spriteAnimator.SetFloat("velocityX", velocity.x);
+    }
+
+    public void StopInput() {
+        acceptInput = false;
+        velocity = new Vector3();
     }
 }
